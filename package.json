@@ -1,0 +1,7 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/create-env.js",
+    "test": "node test/queue.test.mjs"
+  }
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karaoke Queue</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Bỏ qua menu</a>
+
+    <div class="app-shell">
+      <main id="content" class="main-view">
+        <header class="topbar">
+          <div class="brand-mark">
+            <span class="brand-dot"></span>
+            <strong>Karaoke</strong>
+          </div>
+          <form id="searchForm" class="search-form">
+            <input id="query" type="search" placeholder="Bạn muốn hát bài gì?" autocomplete="off" />
+            <button type="submit">Tìm kiếm</button>
+          </form>
+        </header>
+
+        <section class="content-section">
+          <div class="section-head">
+            <h2>Gợi ý ca sĩ</h2>
+            <button id="randomRecommend" class="ghost-button" type="button">Random gợi ý</button>
+          </div>
+          <div id="recommendArtists" class="chips"></div>
+        </section>
+
+        <section class="content-section">
+          <div class="section-head">
+            <h2>Bài hát gợi ý</h2>
+          </div>
+          <div id="recommendSongs" class="recommend-grid"></div>
+        </section>
+
+        <section class="content-section search-section">
+          <div class="section-head">
+            <div class="search-title">
+              <button id="backHome" class="ghost-button" type="button">← Gợi ý</button>
+              <h2>Kết quả tìm kiếm</h2>
+            </div>
+            <p id="status" class="status" role="status">Thêm API key vào env.js rồi tìm bài hát.</p>
+          </div>
+          <div id="results" class="results" aria-live="polite"></div>
+          <button id="loadMore" class="load-more ghost-button" type="button" hidden>Tải thêm</button>
+        </section>
+      </main>
+
+      <aside class="queue-panel">
+        <div class="queue-head">
+          <div>
+            <p class="eyebrow">Hàng chờ</p>
+            <h2>Danh sách nhạc</h2>
+          </div>
+          <span id="queueCount" class="queue-count">0</span>
+        </div>
+        <ol id="queue" class="queue"></ol>
+      </aside>
+    </div>
+
+    <section id="playerDock" class="player-bar is-empty" aria-label="Trình phát">
+      <div class="player-now">
+        <img id="playerThumb" class="player-thumb" alt="" src="" />
+        <div class="player-meta">
+          <strong id="dockTitle">Choose a song to play</strong>
+          <span id="dockChannel"></span>
+        </div>
+      </div>
+      <div class="player-controls">
+        <button class="icon-button is-accent" type="button" aria-label="Random"><i class="fa-solid fa-shuffle"></i></button>
+        <button id="prevButton" class="icon-button" type="button" aria-label="Bài trước"><i class="fa-solid fa-backward-step"></i></button>
+        <button id="playPauseButton" class="play-button" type="button" aria-label="Phát hoặc tạm dừng"><i class="fa-solid fa-play"></i></button>
+        <button id="nextButton" class="icon-button" type="button" aria-label="Bài tiếp"><i class="fa-solid fa-forward-step"></i></button>
+        <button class="icon-button" type="button" aria-label="Lặp lại"><i class="fa-solid fa-rotate-right"></i></button>
+      </div>
+      <div class="player-actions">
+        <button id="openStage" class="icon-button" type="button" aria-label="Mở màn hát"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+        <button id="queueToggle" class="icon-button" type="button" aria-label="Ẩn hoặc hiện hàng chờ"><i class="fa-solid fa-bars"></i></button>
+      </div>
+      <div id="player" class="player-host"></div>
+    </section>
+
+    <script src="env.js"></script>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

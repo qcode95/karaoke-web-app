@@ -1,0 +1,10 @@
+node_modules/
+.DS_Store
+
+.agents/
+.codex/
+.cursor/
+.codegraph/
+output/
+
+env.js
