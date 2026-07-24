@@ -1,4 +1,4 @@
-import { addSong, moveSongUp, prioritizeSong, removeSong } from "./queue.js";
+import { addSong, moveSongUp, prioritizeSong, removeSong, reorderSong } from "./queue.js";
 
 const els = {
   backHome: document.querySelector("#backHome"),
@@ -48,6 +48,8 @@ let stageIsOpen = false;
 const stageChannel = "BroadcastChannel" in window ? new BroadcastChannel("karaoke-stage") : null;
 const placeholderThumb = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' rx='6' fill='%234a4a4a'/%3E%3Cpath d='M15 30v-4M21 34V22M27 31v-6M33 36V20M39 31v-6' stroke='%23c9c9c9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E";
 els.playerThumb.src = placeholderThumb;
+
+queue = queue.map((song) => ({ ...song, queueId: song.queueId || crypto.randomUUID() }));
 
 function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
@@ -147,6 +149,13 @@ function playPrevious() {
   if (!previous) return;
   if (current) queue = addSong(queue, current, true);
   setCurrent(previous, false);
+  renderQueue();
+}
+
+function playQueuedSong(queueId) {
+  const song = queue.find((item) => item.queueId === queueId);
+  queue = removeSong(queue, queueId);
+  setCurrent(song);
   renderQueue();
 }
 
@@ -261,7 +270,7 @@ function renderRecommendations() {
 function renderQueue() {
   els.queueCount.textContent = queue.length;
   els.queue.innerHTML = queue.length ? queue.map((song, index) => `
-    <li class="queue-item">
+    <li class="queue-item" draggable="true" data-queue-id="${song.queueId}">
       <img class="queue-thumb" src="${song.thumb}" alt="${escapeHtml(song.title)}" loading="lazy">
       <div>
         <span class="queue-index">#${index + 1}</span>
@@ -271,22 +280,43 @@ function renderQueue() {
       <details class="queue-menu">
         <summary aria-label="Tùy chọn bài hát">⋮</summary>
         <div>
-          <button type="button" data-play="${song.id}">Hát ngay</button>
-          <button type="button" data-top="${song.id}">Ưu tiên</button>
-          <button type="button" data-up="${song.id}">Đẩy lên</button>
-          <button class="danger" type="button" data-remove="${song.id}">Xóa</button>
+          <button type="button" data-play="${song.queueId}">Hát ngay</button>
+          <button type="button" data-top="${song.queueId}">Ưu tiên</button>
+          <button type="button" data-up="${song.queueId}">Đẩy lên</button>
+          <button class="danger" type="button" data-remove="${song.queueId}">Xóa</button>
         </div>
       </details>
     </li>
   `).join("") : `<li class="queue-empty">Danh sách chờ trống.</li>`;
 
-  els.queue.querySelectorAll("[data-play]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const song = queue.find((item) => item.id === button.dataset.play);
-      queue = removeSong(queue, button.dataset.play);
-      setCurrent(song);
+  els.queue.querySelectorAll(".queue-item").forEach((item) => {
+    item.addEventListener("dragstart", (event) => {
+      event.dataTransfer.setData("text/plain", item.dataset.queueId);
+      item.classList.add("is-dragging");
+    });
+    item.addEventListener("dragend", () => {
+      item.classList.remove("is-dragging");
+      clearDropIndicators();
+    });
+    item.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      clearDropIndicators();
+      item.classList.add(dropAfter(event, item) ? "is-drop-after" : "is-drop-before");
+    });
+    item.addEventListener("dragleave", () => {
+      item.classList.remove("is-drop-before", "is-drop-after");
+    });
+    item.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const after = dropAfter(event, item);
+      clearDropIndicators();
+      queue = reorderSong(queue, event.dataTransfer.getData("text/plain"), item.dataset.queueId, after);
+      save();
       renderQueue();
     });
+  });
+  els.queue.querySelectorAll("[data-play]").forEach((button) => {
+    button.addEventListener("click", () => playQueuedSong(button.dataset.play));
   });
   els.queue.querySelectorAll("[data-top]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -309,6 +339,17 @@ function renderQueue() {
       renderQueue();
     });
   });
+}
+
+function clearDropIndicators() {
+  els.queue.querySelectorAll(".is-drop-before, .is-drop-after").forEach((item) => {
+    item.classList.remove("is-drop-before", "is-drop-after");
+  });
+}
+
+function dropAfter(event, item) {
+  const rect = item.getBoundingClientRect();
+  return event.clientY > rect.top + rect.height / 2;
 }
 
 function renderChips(element, items) {

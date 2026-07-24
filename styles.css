@@ -407,10 +407,40 @@ button.danger:hover {
   border-radius: 6px;
   padding: 8px;
   position: relative;
+  cursor: grab;
 }
 
 .queue-item:hover {
   background: var(--graphite);
+}
+
+.queue-item.is-dragging {
+  opacity: 0.45;
+  outline: 1px solid var(--green);
+}
+
+.queue-item:active {
+  cursor: grabbing;
+}
+
+.queue-item.is-drop-before::before,
+.queue-item.is-drop-after::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--green);
+  box-shadow: 0 0 14px rgba(30, 215, 96, 0.75);
+}
+
+.queue-item.is-drop-before::before {
+  top: -5px;
+}
+
+.queue-item.is-drop-after::after {
+  bottom: -5px;
 }
 
 .queue-thumb {
@@ -441,6 +471,7 @@ button.danger:hover {
 .queue-menu {
   position: relative;
   justify-self: end;
+  cursor: auto;
 }
 
 .queue-menu summary {
